@@ -2,51 +2,51 @@ from typing import List, Optional
 from src.models import Task
 
 def slack(task: Task) -> float:
-    #Запас времени задачи L = D - C.
+    #Р—Р°РїР°СЃ РІСЂРµРјРµРЅРё Р·Р°РґР°С‡Рё L = D - C.
     return task.D - task.C
 
 def is_feasible(task: Task) -> bool:
-    #Признак выполнимости дедлайна (L >= 0).
+    #РџСЂРёР·РЅР°Рє РІС‹РїРѕР»РЅРёРјРѕСЃС‚Рё РґРµРґР»Р°Р№РЅР° (L >= 0).
     return slack(task) >= 0
 
 def deadline_type(task: Task) -> str:
-    #Тип дедлайна по соотношению D и T.
+    #РўРёРї РґРµРґР»Р°Р№РЅР° РїРѕ СЃРѕРѕС‚РЅРѕС€РµРЅРёСЋ D Рё T.
     if task.D == task.T:
-        return "неявный (D = T)"
+        return "РЅРµСЏРІРЅС‹Р№ (D = T)"
     elif task.D < task.T:
-        return "ограниченный (D < T)"
+        return "РѕРіСЂР°РЅРёС‡РµРЅРЅС‹Р№ (D < T)"
     else:
-        return "произвольный (D > T)"
+        return "РїСЂРѕРёР·РІРѕР»СЊРЅС‹Р№ (D > T)"
 
 def classify_system(tasks: List[Task]) -> str:
-    #Класс системы: жёсткое РВ, если есть хотя бы одна жёсткая задача, иначе мягкое.
+    #РљР»Р°СЃСЃ СЃРёСЃС‚РµРјС‹: Р¶С‘СЃС‚РєРѕРµ Р Р’, РµСЃР»Рё РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ РѕРґРЅР° Р¶С‘СЃС‚РєР°СЏ Р·Р°РґР°С‡Р°, РёРЅР°С‡Рµ РјСЏРіРєРѕРµ.
     for task in tasks:
-        if task.hardness.lower() == "жёсткое":
-            return "Система жёсткого реального времени"
-    return "Система мягкого реального времени"
+        if task.hardness.lower() == "Р¶С‘СЃС‚РєРѕРµ":
+            return "РЎРёСЃС‚РµРјР° Р¶С‘СЃС‚РєРѕРіРѕ СЂРµР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё"
+    return "РЎРёСЃС‚РµРјР° РјСЏРіРєРѕРіРѕ СЂРµР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё"
 
 def critical_task(tasks: List[Task]) -> Optional[Task]:
-    #Критическая задача — с наименьшим запасом среди жёстких.
-    hard_tasks = [t for t in tasks if t.hardness.lower() == "жёсткое"]
+    #РљСЂРёС‚РёС‡РµСЃРєР°СЏ Р·Р°РґР°С‡Р° вЂ” СЃ РЅР°РёРјРµРЅСЊС€РёРј Р·Р°РїР°СЃРѕРј СЃСЂРµРґРё Р¶С‘СЃС‚РєРёС….
+    hard_tasks = [t for t in tasks if t.hardness.lower() == "Р¶С‘СЃС‚РєРѕРµ"]
     if not hard_tasks:
         return None
     return min(hard_tasks, key=slack)
 
 def required_reaction_time(tasks: List[Task]) -> float:
-    #Требуемое время реакции системы по жёстким задачам (при отсутствии — по всем).
-    hard_tasks = [t for t in tasks if t.hardness.lower() == "жёсткое"]
+    #РўСЂРµР±СѓРµРјРѕРµ РІСЂРµРјСЏ СЂРµР°РєС†РёРё СЃРёСЃС‚РµРјС‹ РїРѕ Р¶С‘СЃС‚РєРёРј Р·Р°РґР°С‡Р°Рј (РїСЂРё РѕС‚СЃСѓС‚СЃС‚РІРёРё вЂ” РїРѕ РІСЃРµРј).
+    hard_tasks = [t for t in tasks if t.hardness.lower() == "Р¶С‘СЃС‚РєРѕРµ"]
     target_tasks = hard_tasks if hard_tasks else tasks
     return min(t.D for t in target_tasks)
 
 def utilization(tasks: List[Task]) -> float:
-    #Коэффициент загрузки U = sum(C_i / T_i).
+    #РљРѕСЌС„С„РёС†РёРµРЅС‚ Р·Р°РіСЂСѓР·РєРё U = sum(C_i / T_i).
     return sum(t.C / t.T for t in tasks)
 
 def classify_architecture(n_cpu: int, has_network: bool) -> str:
-    #Архитектурный класс системы по числу процессорных ядер и наличию сети.
+    #РђСЂС…РёС‚РµРєС‚СѓСЂРЅС‹Р№ РєР»Р°СЃСЃ СЃРёСЃС‚РµРјС‹ РїРѕ С‡РёСЃР»Сѓ РїСЂРѕС†РµСЃСЃРѕСЂРЅС‹С… СЏРґРµСЂ Рё РЅР°Р»РёС‡РёСЋ СЃРµС‚Рё.
     if has_network:
-        return "Распределённая система"
+        return "Р Р°СЃРїСЂРµРґРµР»С‘РЅРЅР°СЏ СЃРёСЃС‚РµРјР°"
     elif n_cpu > 1:
-        return f"Многопроцессорная система ({n_cpu} CPU)"
+        return f"РњРЅРѕРіРѕРїСЂРѕС†РµСЃСЃРѕСЂРЅР°СЏ СЃРёСЃС‚РµРјР° ({n_cpu} CPU)"
     else:
-        return "Однопроцессорная система"
+        return "РћРґРЅРѕРїСЂРѕС†РµСЃСЃРѕСЂРЅР°СЏ СЃРёСЃС‚РµРјР°"
